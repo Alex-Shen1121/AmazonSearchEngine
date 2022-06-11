@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>新闻检索系统</title>
+
+    <style type="text/css">
+        div#doc {width:850px}
+    .pagination-page-info {
+        padding: .6em;
+        padding-left: 0;
+        width: 40em;
+        margin: .5em;
+        margin-left: 0;
+        font-size: 12px;
+    }
+    .pagination-page-info b {
+        color: black;
+        background: #6aa6ed;
+        padding-left: 2px;
+        padding: .1em .25em;
+        font-size: 150%;
+    }
+    .vintage1{
+    background: #EEE url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAHklEQVQImWNkYGBgYGD4//8/A5wF5SBYyAr+//8PAPOCFO0Q2zq7AAAAAElFTkSuQmCC) repeat;
+    text-shadow: 5px -5px black, 4px -4px white;
+    font-weight: bold;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text }
+
+
+
+
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="header">
+        <ul>
+            <p class="vintage1"><font size="5">面向商品评论数据的信息检索系统</font></p>
+            <form name="search" action="/search/" method="POST">
+                <p>
+                    {% if key==None %}
+                        <input type="text" name="query" id="query_text">
+                    {% else %}
+                        <input type="text" name="query" id="query_text" value="{{key}}">
+                    {% endif %}
+                    <input type="submit" id="btn" value="搜索">
+                </p>
+            </form>
+        </ul>
+    </div>
+    <hr/>
+    {% if key==None and error %}
+    <ul>
+        <br><br><br><br><br><br><br><br>
+        <p class="vintage1"><font size="35">۞ GET THE LATEST AMAZON GIFT CARDS HERE!</font></p>
+        <br><br><br><br><br><br><br><br><br><br><br><br>
+    </ul>
+    {% elif key and error %}
+    <ul>
+        <p>搜索用时：<b>{{cost}}</b> 秒</p><br/>
+    </ul>
+    {% endif %}
+    {% block high_search%}
+    {% endblock %}
+    {% if error%}
+
+    {% for doc in docs%}
+        <div id={{doc.id}}>
+            <ul id="navigation">
+                <p id={{doc.id}}+"title">
+                    <big><a href="/search/{{doc.id}}/" target="_blank">{{doc.title}}</a></big>
+                    <font color="#FF0099">【相关性：{{doc.sim}}】</font>
+                </p>
+                <p>
+                    <b><font size="3" color="#404040 ">{{doc.time}}</font></b>
+                </p>
+                <p id={{doc.id}}+"snippet">
+                    {{doc.snippet}}<br/>
+                </p>
+            </ul>
+        </div>
+        <br/>
+
+        {% for k in keys_list %}
+        <script type="text/javascript">
+                    var content = document.getElementById("{{doc.id}}").innerHTML;
+                    var s = "{{k}}";
+                    var reg = new RegExp("(" + s + ")", "g");
+                    var str = content;
+                    var newstr = str.replace(reg, "<font color=#FF0000>$1</font>");
+                    document.getElementById("{{doc.id}}").innerHTML = newstr;
+                    document.getElementById("{{doc.id}}").style.width="850px";
+        </script>
+        {% endfor %}
+    {% endfor %}
+
+    {% block next %}
+    <ul>
+        {% for i in page %}
+        {% if i<=5 %}
+        <a href="/search/page/{{i}}/"><font size="4"><b>{{i}}</b></font></a>&nbsp;
+        {% endif %}
+        {% endfor %}
+    </ul>
+    {% endblock %}
+    {% else %}
+    <ul>
+        <p>
+            <font size="4">┭┮﹏┭┮ 抱歉，没有找到与</font><font color="red"><b>“{{key}}”</b></font><font size="4">相关的新闻。</font>
+            <br><br><br><br><br><br><br><br>
+            <br><br><br><br><br><br><br><br>
+            <br><br><br><br><br><br><br><br>
+        </p>
+    </ul>
+    {% endif %}
+
+    <div id="footer">
+        <hr>
+        <p>© Simple news search engine, by ChenYu Shen (2022/06).</p>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends "search.html" %}
+{% block high_search%}
+<div id="select">
+    <ul>
+        <form name="search" action="/search/{{key}}/" method="POST">
+            <input {{checked[0]}} type="radio" name="order" id="r1" value="0"/> <label for="r1">最相关</label>
+            <input {{checked[1]}} type="radio" name="order" id="r2" value="1"/> <label for="r2">最新</label>
+            <input type="submit" value="确定">
+        </form>
+    </ul>
+</div>
+{% endblock %}

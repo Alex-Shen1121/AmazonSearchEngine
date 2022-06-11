@@ -1,21 +1,10 @@
-import imp
-from sys import meta_path
-from xml.dom.minidom import parse
-import xml.dom.minidom
 import re
-import jieba
 import math
-import json
 import os
-from matplotlib.pyplot import title
-
-from requests import delete
-from tensorboard import summary
 import ParseJson
 from tqdm import tqdm
 import pickle
 from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
 
 
 class InvertIndex:
@@ -53,7 +42,7 @@ class InvertIndex:
         if os.path.exists(self.file_path + f"/{type}/invert_index_{type}.pkl"):
             # 如果前面已经构建好了索引，则直接加载，不需要再重新计算
             print("正在加载已有索引")
-            self.load_index()
+            self.load_index(type)
         else:
             # 如果是第一次运行，则构建并保存索引，以便下次使用
             print("正在构建新索引")
@@ -274,38 +263,28 @@ class InvertIndex:
 
     def load_index(self, type='test'):
         # 加载各种索引
-        with open(f"./datasets/{type}/raw_data_metaPlusReview_{type}.pkl", "wb") as fp:
-            pickle.dump(self.raw_data_metaPlusReview, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/doc_set_{type}.pkl", "wb") as fp:
-            pickle.dump(self.doc_set, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/tokens_lib_{type}.pkl", "wb") as fp:
-            pickle.dump(self.tokens_lib, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/terms_lib_{type}.pkl", "wb") as fp:
-            pickle.dump(self.terms_lib, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/tokens_num_{type}.pkl", "wb") as fp:
-            pickle.dump(self.tokens_num, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/terms_num_{type}.pkl", "wb") as fp:
-            pickle.dump(self.terms_num, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/invert_index_{type}.pkl", "wb") as fp:
-            pickle.dump(self.invert_index, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/doc_TF_{type}.pkl", "wb") as fp:
-            pickle.dump(self.doc_TF, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/doc_IDF_{type}.pkl", "wb") as fp:
-            pickle.dump(self.doc_IDF, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"./datasets/{type}/doc_TFIDF_{type}.pkl", "wb") a+s fp:
-            pickle.dump(self.doc_TFIDF, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/raw_data_metaPlusReview_{type}.pkl", "rb") as fp:
+            self.raw_data_metaPlusReview = pickle.load(fp)
+        with open(f"./datasets/{type}/doc_set_{type}.pkl", "rb") as fp:
+            self.doc_set = pickle.load(fp)
+        with open(f"./datasets/{type}/tokens_lib_{type}.pkl", "rb") as fp:
+            self.tokens_lib = pickle.load(fp)
+        with open(f"./datasets/{type}/terms_lib_{type}.pkl", "rb") as fp:
+            self.terms_lib = pickle.load(fp)
+        with open(f"./datasets/{type}/tokens_num_{type}.pkl", "rb") as fp:
+            self.tokens_num = pickle.load(fp)
+        with open(f"./datasets/{type}/terms_num_{type}.pkl", "rb") as fp:
+            self.terms_num = pickle.load(fp)
+        with open(f"./datasets/{type}/invert_index_{type}.pkl", "rb") as fp:
+            self.invert_index = pickle.load(fp)
+        with open(f"./datasets/{type}/doc_TF_{type}.pkl", "rb") as fp:
+            self.doc_TF = pickle.load(fp)
+        with open(f"./datasets/{type}/doc_IDF_{type}.pkl", "rb") as fp:
+            self.doc_IDF = pickle.load(fp)
+        with open(f"./datasets/{type}/doc_TFIDF_{type}.pkl", "rb") as fp:
+            self.doc_TFIDF = pickle.load(fp)
 
 if __name__ == '__main__':
-    index_class = InvertIndex('./datasets', 'whole')
+    index_class = InvertIndex('./datasets', 'test')
 
     # index_class.create_rawData()
