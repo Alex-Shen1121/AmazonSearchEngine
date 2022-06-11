@@ -69,14 +69,26 @@
         <div id={{doc.id}}>
             <ul id="navigation">
                 <p id={{doc.id}}+"title">
-                    <big><a href="/search/{{doc.id}}/" target="_blank">{{doc.title}}</a></big>
+                    <big><a href="/search/{{doc.id}}/" target="_blank">{{doc.title}}</a></big>                    
                     <font color="#FF0099">【相关性：{{doc.sim}}】</font>
                 </p>
                 <p>
-                    <b><font size="3" color="#404040 ">{{doc.time}}</font></b>
+                    <font font="3" color="#000000">商品大类：{{doc.main_cat}}</font>
+                    {% if doc.price != ''%}
+                    <font font="3" color="#000000">商品价格：{{doc.price}}</font>
+                    {%else%}
+                    <font font="3" color="#000000">商品价格：未知</font>
+                    {%endif%}
                 </p>
-                <p id={{doc.id}}+"snippet">
-                    {{doc.snippet}}<br/>
+                <p id={{doc.id}}+"description">
+                    {%for description in doc.description%}
+                        <font font="3" color="#000000">{{description}}</font>
+                    {%endfor%}
+                </p>
+                <p id={{doc.id}}+'image'>
+                    {%for image in doc.imageURLHighRes%}
+                        <img src="{{image}}" width="100" height="100">
+                    {%endfor%}
                 </p>
             </ul>
         </div>
