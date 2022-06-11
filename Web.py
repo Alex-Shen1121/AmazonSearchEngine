@@ -103,7 +103,8 @@ def get_doc_from_docID(docid, extra=False):
             'price': price,
             'imageURLHighRes': imageURLHighRes,
             'reviews': reviews,
-            'sim': sim
+            'sim': sim,
+            'id': id
         }
         docs.append(doc)
     return docs
@@ -164,7 +165,7 @@ def high_search(key):
 
 @app.route('/search/<id>/', methods=['GET', 'POST'])
 def content(id):
-    id = int(id)
+    id = str(id)
     try:
         doc = get_doc_from_docID([id])
         return render_template('content.html', doc=doc[0])

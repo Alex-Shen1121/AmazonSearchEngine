@@ -98,9 +98,9 @@
         <script type="text/javascript">
                     var content = document.getElementById("{{doc.id}}").innerHTML;
                     var s = "{{k}}";
-                    var reg = new RegExp("(" + s + ")", "g");
+                    var reg = new RegExp(" (" + s + ") ", "g");
                     var str = content;
-                    var newstr = str.replace(reg, "<font color=#FF0000>$1</font>");
+                    var newstr = str.replace(reg, "<font color=#FF0000> $1 </font>");
                     document.getElementById("{{doc.id}}").innerHTML = newstr;
                     document.getElementById("{{doc.id}}").style.width="850px";
         </script>
