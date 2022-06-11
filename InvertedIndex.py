@@ -59,10 +59,10 @@ class InvertIndex:
             print("正在构建新索引")
             if not os.path.exists(self.file_path + f"/raw_data_metaPlusReview{type}.pkl"):
                 self.create_rawData(type=type)
-            self.createText(type=type);
+            self.createText(type=type)
             self.calculate_TFIDF()
             self.save_index()
-    
+
     # 删除标点符号，并且将句子转化为list
     def deletePunctuation(self, str):
         str = re.split('[^a-zA-Z]', str)
@@ -75,7 +75,7 @@ class InvertIndex:
         for w in str:
             res.add(ps.stem(w))
         return res
-    
+
     # tokens转化为terms
     def tokens_to_terms(self, tokens):
         ps = PorterStemmer()
@@ -136,19 +136,20 @@ class InvertIndex:
                     'overall': review['overall'],
                     'vote': review['vote'],
                     'reviewText': review['reviewText'],
-                    'summary': review['summary'], 
+                    'summary': review['summary'],
                 })
-                
+
         with open(f"./datasets/raw_data_metaPlusReview{type}.pkl", "wb") as fp:
-            pickle.dump(self.raw_data_metaPlusReview, fp, protocol = pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.raw_data_metaPlusReview, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         print("原始数据集创建完成")
-    
+
     # 从原始数据中提取有效信息
-    def createText(self, type='test', all = False, section = []):
+    def createText(self, type='test', all=False, section=[]):
         print("正在加载原始数据集...")
         with open(f"./datasets/raw_data_metaPlusReview{type}.pkl", "rb") as fp:
             self.raw_data_metaPlusReview = pickle.load(fp)
-        
+
         print("正在提取有效信息...")
         # 提取有效信息 变成list[]
         for asin in tqdm(self.raw_data_metaPlusReview.keys()):
@@ -162,7 +163,7 @@ class InvertIndex:
             reviewSummary = ''
             for review in product['reviews']:
                 reviewSummary += review['summary']
-                 
+
             self.doc_set[asin] = {
                 'category': self.deletePunctuation(' '.join(product['category'])),
                 'description': self.deletePunctuation(' '.join(product['description'])),
@@ -172,10 +173,11 @@ class InvertIndex:
                 'details': self.deletePunctuation(detail),
                 'main_cat': self.deletePunctuation(product['main_cat']),
                 'reviewText': self.deletePunctuation(reviewText),
-                'reviewSummary': self.deletePunctuation(reviewSummary)                            
+                'reviewSummary': self.deletePunctuation(reviewSummary)
             }
-            
+
         # 构造tokens列表
+        print("正在构造tokens列表...")
         for cut_doc in tqdm(self.doc_set.values()):
             for item in cut_doc.values():
                 self.tokens_lib.extend(self.tokens_to_terms(item))
@@ -185,11 +187,11 @@ class InvertIndex:
         self.terms_lib = list(set(self.tokens_lib))
         # 计算terms数量
         self.terms_num = len(self.terms_lib)
-        
+
         # # 打印输出个数
         # print("token: " + str(self.tokens_num))
         # print("term: " + str(self.terms_num))
-        
+
         # 构建倒排索引invert_index
         # 对于词库中的每一个term
         print("正在构建倒排索引...")
@@ -198,13 +200,12 @@ class InvertIndex:
             # 看看文档集的每一个文档中有没有包含该token
             for j in self.doc_set:
                 # 如果该文档包含了该token，那么就把这个文档的id加入这条倒排索引中
-                for l in self.doc_set[j].values():                    
+                for l in self.doc_set[j].values():
                     if term in l:
                         temp_list.append(j)
                         break
-            self.invert_index[term] = temp_list         
-            
-            
+            self.invert_index[term] = temp_list
+
     def calculate_TFIDF(self):
         # 计算TF
         print("正在计算TF...")
@@ -217,27 +218,39 @@ class InvertIndex:
             i = 0
             for frequency in self.doc_TF[asin]:
                 if self.doc_TF[asin][i] > 0:
-                    self.doc_TF[asin][i] = (1 + math.log(self.doc_TF[asin][i], 10))
+                    self.doc_TF[asin][i] = (
+                        1 + math.log(self.doc_TF[asin][i], 10))
                 else:
                     self.doc_TF[asin][i] = 0
                 i += 1
-        
+
         # 计算IDF
         print("正在计算IDF...")
+        # 每个词项在文档集中的出现次数
         self.doc_IDF = [0.0] * self.terms_num
         i = 0
         for term in tqdm(self.terms_lib):
             for doc in self.doc_set.values():
-                if term in doc['title_content']:
-                    self.doc_IDF[i] += 1
-            self.doc_IDF[i] = math.log(self.doc_num / self.doc_IDF[i], 10)
+                for l in doc.values():
+                    if term in l:
+                        self.doc_IDF[i] += 1
+            self.doc_IDF[i] = math.log(
+                len(self.doc_set) / (self.doc_IDF[i]+1), 10)
             i += 1
-            
+        
+        # 计算TF-IDF
+        print("正在计算TF-IDF...")
+        for asin in tqdm(self.doc_set.keys()):
+            self.doc_TFIDF[asin] = [0.0] * self.terms_num
+            for i in range(self.terms_num):
+                self.doc_TFIDF[asin][i] = self.doc_TF[asin][i] * self.doc_IDF[i]
+
     def save_index(self):
-        pass
+        # 将要保存的内容组织好
+        
 
 
 if __name__ == '__main__':
     index_class = InvertIndex('./datasets', 'test')
-    
+
     # index_class.create_rawData()
