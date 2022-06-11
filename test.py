@@ -1,12 +1,12 @@
 
-# 写入脚本并保存
-from flask import Flask
-app = Flask(__name__)
+# importing modules
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
  
-@app.route("/")
-def hello():
-    return "Hello World!"
+ps = PorterStemmer()
  
-if __name__ == "__main__":
-    # Web运行
-    app.run()
+sentence = "Programmers program with programming, [languages]"
+words = word_tokenize(sentence)
+ 
+for w in words:
+    print(w, " : ", ps.stem(w))
