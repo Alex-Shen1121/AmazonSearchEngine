@@ -48,20 +48,19 @@ class InvertIndex:
     wholeReviewPath = './rawdata/Gift_Cards.json.gz'
     partReviewPath = './rawdata/Gift_Cards_5.json.gz'
 
-    def __init__(self, FilePath, type):
+    def __init__(self, FilePath, type = 'test'):
         self.file_path = FilePath
-        if os.path.exists(self.file_path + "/built_index.json"):
+        if os.path.exists(self.file_path + f"/{type}/invert_index_{type}.pkl"):
             # 如果前面已经构建好了索引，则直接加载，不需要再重新计算
             print("正在加载已有索引")
             self.load_index()
         else:
             # 如果是第一次运行，则构建并保存索引，以便下次使用
             print("正在构建新索引")
-            if not os.path.exists(self.file_path + f"/raw_data_metaPlusReview{type}.pkl"):
-                self.create_rawData(type=type)
+            self.create_rawData(type=type)
             self.createText(type=type)
-            self.calculate_TFIDF()
-            self.save_index()
+            self.calculate_TFIDF(type=type)
+            self.save_index(type=type)
 
     # 删除标点符号，并且将句子转化为list
     def deletePunctuation(self, str):
@@ -139,17 +138,10 @@ class InvertIndex:
                     'summary': review['summary'],
                 })
 
-        with open(f"./datasets/raw_data_metaPlusReview{type}.pkl", "wb") as fp:
-            pickle.dump(self.raw_data_metaPlusReview, fp,
-                        protocol=pickle.HIGHEST_PROTOCOL)
         print("原始数据集创建完成")
 
     # 从原始数据中提取有效信息
     def createText(self, type='test', all=False, section=[]):
-        print("正在加载原始数据集...")
-        with open(f"./datasets/raw_data_metaPlusReview{type}.pkl", "rb") as fp:
-            self.raw_data_metaPlusReview = pickle.load(fp)
-
         print("正在提取有效信息...")
         # 提取有效信息 变成list[]
         for asin in tqdm(self.raw_data_metaPlusReview.keys()):
@@ -206,7 +198,7 @@ class InvertIndex:
                         break
             self.invert_index[term] = temp_list
 
-    def calculate_TFIDF(self):
+    def calculate_TFIDF(self, type='test'):
         # 计算TF
         print("正在计算TF...")
         for asin in tqdm(self.doc_set.keys()):
@@ -237,20 +229,83 @@ class InvertIndex:
             self.doc_IDF[i] = math.log(
                 len(self.doc_set) / (self.doc_IDF[i]+1), 10)
             i += 1
-        
+
         # 计算TF-IDF
         print("正在计算TF-IDF...")
         for asin in tqdm(self.doc_set.keys()):
             self.doc_TFIDF[asin] = [0.0] * self.terms_num
             for i in range(self.terms_num):
-                self.doc_TFIDF[asin][i] = self.doc_TF[asin][i] * self.doc_IDF[i]
+                self.doc_TFIDF[asin][i] = self.doc_TF[asin][i] * \
+                    self.doc_IDF[i]
 
-    def save_index(self):
-        # 将要保存的内容组织好
-        
+    def save_index(self, type='test'):
+        print("正在保存各种索引...")
+        # 保存各种索引
+        with open(f"./datasets/{type}/raw_data_metaPlusReview_{type}.pkl", "wb") as fp:
+            pickle.dump(self.raw_data_metaPlusReview, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_set_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_set, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/tokens_lib_{type}.pkl", "wb") as fp:
+            pickle.dump(self.tokens_lib, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/terms_lib_{type}.pkl", "wb") as fp:
+            pickle.dump(self.terms_lib, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/tokens_num_{type}.pkl", "wb") as fp:
+            pickle.dump(self.tokens_num, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/terms_num_{type}.pkl", "wb") as fp:
+            pickle.dump(self.terms_num, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/invert_index_{type}.pkl", "wb") as fp:
+            pickle.dump(self.invert_index, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_TF_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_TF, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_IDF_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_IDF, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_TFIDF_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_TFIDF, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
 
+    def load_index(self, type='test'):
+        # 加载各种索引
+        with open(f"./datasets/{type}/raw_data_metaPlusReview_{type}.pkl", "wb") as fp:
+            pickle.dump(self.raw_data_metaPlusReview, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_set_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_set, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/tokens_lib_{type}.pkl", "wb") as fp:
+            pickle.dump(self.tokens_lib, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/terms_lib_{type}.pkl", "wb") as fp:
+            pickle.dump(self.terms_lib, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/tokens_num_{type}.pkl", "wb") as fp:
+            pickle.dump(self.tokens_num, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/terms_num_{type}.pkl", "wb") as fp:
+            pickle.dump(self.terms_num, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/invert_index_{type}.pkl", "wb") as fp:
+            pickle.dump(self.invert_index, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_TF_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_TF, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_IDF_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_IDF, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_TFIDF_{type}.pkl", "wb") a+s fp:
+            pickle.dump(self.doc_TFIDF, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == '__main__':
-    index_class = InvertIndex('./datasets', 'test')
+    index_class = InvertIndex('./datasets', 'whole')
 
     # index_class.create_rawData()
