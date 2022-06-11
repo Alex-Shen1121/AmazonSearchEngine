@@ -1,10 +1,13 @@
+from unicodedata import category
+
+from numpy import imag
 from SearchEngine import SearchEngine
 from flask import Flask, render_template, request
 import time
 
 app = Flask(__name__)
 
-global query 
+global query
 global checked
 global page_list
 global doc_id_list
@@ -33,14 +36,15 @@ def search():
     global keys_list
     global docs_now
     global cost
-    query = request.form['query']  # 从web的输入框中获取用户输入的query
-    keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(query)
+    # query = request.form['query']  # 从web的输入框中获取用户输入的query
+    # keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(query)
     try:
         checked = ['checked="true"', '']
         query = request.form['query']  # 从web的输入框中获取用户输入的query
         if query != '':
             start = time.perf_counter()
-            keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(query)
+            keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(
+                query)
             if len(doc_id_list) == 0:
                 return render_template('search.html', key=query, error=False)
             else:
@@ -61,15 +65,46 @@ def get_doc_from_docID(docid, extra=False):
     docs = []
     i = 0
     for id in docid:
-        title = SE.index_class.origin_doc_set[id]['title']
-        body = SE.index_class.origin_doc_set[id]['content']
-        snippet = body[0:180] + '……'
-        time = str(SE.index_class.origin_doc_set[id]['datetime']).split(' ')[0]
-        datetime = SE.index_class.origin_doc_set[id]['datetime']
+        # 商品标题
+        title = SE.index_class.raw_data_metaPlusReview[id]['title']
+        # 商品类别
+        category = list(
+            set(SE.index_class.raw_data_metaPlusReview[id]['category']))
+        # 商品描述
+        description = list(
+            set(SE.index_class.raw_data_metaPlusReview[id]['description']))
+        # 商品品牌
+        brand = SE.index_class.raw_data_metaPlusReview[id]['brand']
+        # 商品特性
+        feature = list(
+            set(SE.index_class.raw_data_metaPlusReview[id]['feature']))
+        # 商品细节
+        details = SE.index_class.raw_data_metaPlusReview[id]['details']
+        # 商品大类
+        main_cat = SE.index_class.raw_data_metaPlusReview[id]['main_cat']
+        # 商品价格
+        price = SE.index_class.raw_data_metaPlusReview[id]['price']
+        # 商品高清图
+        imageURLHighRes = list(
+            set(SE.index_class.raw_data_metaPlusReview[id]['imageURLHighRes']))
+        # 商品评论
+        reviews = SE.index_class.raw_data_metaPlusReview[id]['reviews']
+
         sim = doc_sim_list[i]
         i += 1
-        doc = {'title': title, 'snippet': snippet, 'datetime': datetime, 'time': time, 'body': body,
-               'id': id, 'sim': sim, 'extra': []}
+        doc = {
+            'title': title,
+            'category': category,
+            'description': description,
+            'brand': brand,
+            'feature': feature,
+            'details': details,
+            'main_cat': main_cat,
+            'price': price,
+            'imageURLHighRes': imageURLHighRes,
+            'reviews': reviews,
+            'sim': sim
+        }
         docs.append(doc)
     return docs
 
@@ -112,7 +147,8 @@ def high_search(key):
                 checked[i] = 'checked="true"'
             else:
                 checked[i] = ''
-        keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(query, selected)
+        keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(
+            query, selected)
         if len(doc_id_list) == 0:
             return render_template('search.html', key=query, error=False)
         else:

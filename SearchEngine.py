@@ -56,16 +56,14 @@ class SearchEngine:
         return result
 
     # 根据选择排序的思想，返回cos-sim topK的文档ID，复杂度O(n)
-    def top_k_cossim(self, final_result):
+    def top_k_cossim(self, final_result, k = 25):
         doc_id_list = []
         cos_sim_list = []
         time_list = []
         for v in final_result.values():
             doc_id_list.append(v['doc_ID'])
             cos_sim_list.append(v['cos_sim'])
-            time_list.append(v['datetime'])
 
-        k = 25
         final_result_k = {}
         for i in range(len(doc_id_list)):
             max_index = i
@@ -79,10 +77,7 @@ class SearchEngine:
                 temp_cos_sim = cos_sim_list[i]
                 cos_sim_list[i] = cos_sim_list[max_index]
                 cos_sim_list[max_index] = temp_cos_sim
-                temp_time = time_list[i]
-                time_list[i] = time_list[max_index]
-                time_list[max_index] = temp_time
-            final_result_k[i] = {'doc_ID': doc_id_list[i], 'cos_sim': cos_sim_list[i], 'datetime': time_list[i]}
+            final_result_k[i] = {'doc_ID': doc_id_list[i], 'cos_sim': cos_sim_list[i]}
             k -= 1
             if k == 0:
                 break
@@ -114,10 +109,7 @@ class SearchEngine:
                 temp_cos_sim = cos_sim_list[i]
                 cos_sim_list[i] = cos_sim_list[max_index]
                 cos_sim_list[max_index] = temp_cos_sim
-                temp_time = time_list[i]
-                time_list[i] = time_list[max_index]
-                time_list[max_index] = temp_time
-            final_result_k[i] = {'doc_ID': doc_id_list[i], 'cos_sim': cos_sim_list[i], 'datetime': time_list[i]}
+            final_result_k[i] = {'doc_ID': doc_id_list[i], 'cos_sim': cos_sim_list[i]}
             k -= 1
             if k == 0:
                 break
@@ -130,15 +122,13 @@ class SearchEngine:
         search_query = search_query.lower()
         # 用正则表达式去除标点，只保留"中文"、"大小写英文字母"、"数字"
         search_query = re.sub("[^\u4e00-\u9fa5^a-z^A-Z^0-9]", " ", search_query)
-        # 载入词典，使分词更精准
-        jieba.set_dictionary("./datasets/dict.txt")
         # jieba分词，禁用全切割模式
         tokens_list = list(jieba.cut(search_query, cut_all=False))
         tokens_list = list(filter(lambda x: x != '', tokens_list))
         tokens_list = list(filter(lambda x: x != ' ', tokens_list))
         terms_list = list(set(tokens_list))
-        # 输出query解析结果 #############################################################
-        # print("查询字符串的解析结果：" + str(terms_list))
+        # 输出query解析结果
+        print("查询字符串的解析结果：" + str(terms_list))
 
         # 在倒排索引中，逐个找出包含这些terms的文档id，并求出它们的交集作为结果
         # 如果某个term在倒排索引中没有，则跳过这个term继续。这样可以避免因为某些term找不到而导致整个query没有返回结果
@@ -151,13 +141,14 @@ class SearchEngine:
         except:
             result = []
 
-        for i in range(1, len(terms_list) - 1):
+        # 做查询结果的交集
+        for i in range(1, len(terms_list)):
             try:
                 result = self.find_term1_term2(result, self.index_class.invert_index[terms_list[i]])
             except:
                 continue
 
-        # 计算query的TFIDF向量
+        # 计算query文本的TFIDF向量
         # 计算query_TF
         query_TF = [0.0] * self.index_class.terms_num
         for token in tokens_list:
@@ -186,12 +177,12 @@ class SearchEngine:
             doc_id = result[i]
             doc_TFIDF = self.index_class.doc_TFIDF[doc_id]
             sim = self.cos_sim(query_TFIDF, doc_TFIDF)
-            time = self.index_class.origin_doc_set[doc_id]['datetime']
-            final[i] = {'doc_ID': doc_id, 'cos_sim': sim, 'datetime': time}
+            # time = self.index_class.origin_doc_set[doc_id]['datetime']
+            final[i] = {'doc_ID': doc_id, 'cos_sim': sim}
 
         # 根据用户选择的方式排序返回
         if sort_type == 0:
-            final = self.top_k_cossim(final)  # 按余弦相似度
+            final = self.top_k_cossim(final, k=25)  # 按余弦相似度
         else:
             final = self.top_k_time(final)  # 按发布时间
 

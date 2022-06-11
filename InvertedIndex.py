@@ -99,6 +99,7 @@ class InvertIndex:
                 'also_view': product['also_view'],
                 'details': product['details'],
                 'main_cat': product['main_cat'],
+                'price': product['price'],
                 'imageURLHighRes': product['imageURLHighRes']
             }
             self.raw_data_metaPlusReview[productAsin]['reviews'] = []
