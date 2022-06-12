@@ -96,8 +96,22 @@
         </div>
         <hr />
 
-        {%for rev in doc.review%}
-        {%endfor%}
+
+        <div>
+            {%for text in doc.reviews%}
+                <p>🤠 Reviewer Name: {{text[5]}}</p>
+                <p>⌚️ Reviewe Time: {{text[6]}}</p>
+                <p>📠 Summary: {{text[4]}}</p>
+                <p>📃 Review: {{text[3]}}</p>
+                <br/>
+                {%for image in text[0]%}
+                    <img src="{{image}}" width="100px" height="100px" />
+                {%endfor%}
+                <p>👍 Vote: {{text[2]}}</p>
+                <hr/>
+            {%endfor%}
+        </div>
+
         
 
 

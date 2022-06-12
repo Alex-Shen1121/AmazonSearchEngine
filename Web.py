@@ -87,8 +87,23 @@ def get_doc_from_docID(docid, extra=False):
         # 商品高清图
         imageURLHighRes = list(
             set(SE.index_class.raw_data_metaPlusReview[id]['imageURLHighRes']))
+        # 评论时间
+        reviews_time = [x['reviewTime'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        # 评论Name
+        reviewerName = [x['reviewerName'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
         # 商品评论
-        reviews = SE.index_class.raw_data_metaPlusReview[id]['reviews']
+        reviews_image = [x['image'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        # 评分
+        reviews_overall = [x['overall'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        # 点赞数
+        reviews_vote = [x['vote'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        # 评论
+        reviews_text = [x['reviewText'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        # summary
+        reviews_summary = [x['summary'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviews = [[reviews_image[i], reviews_overall[i], reviews_vote[i], 
+                    reviews_text[i], reviews_summary[i],reviewerName[i], reviews_time[i]] 
+                   for i in range(len(reviews_image))]
 
         sim = doc_sim_list[i]
         i += 1
@@ -102,6 +117,11 @@ def get_doc_from_docID(docid, extra=False):
             'main_cat': main_cat,
             'price': price,
             'imageURLHighRes': imageURLHighRes,
+            'reviewsimage': reviews_image,
+            'reviewsoverall': reviews_overall,
+            'reviewsvote': reviews_vote,
+            'reviewstext': reviews_text,
+            'reviewssummary': reviews_summary,
             'reviews': reviews,
             'sim': sim,
             'id': id

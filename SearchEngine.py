@@ -3,6 +3,7 @@ import jieba
 import re
 import math
 import datetime
+from nltk.stem import PorterStemmer
 
 
 class SearchEngine:
@@ -127,6 +128,8 @@ class SearchEngine:
         tokens_list = list(filter(lambda x: x != '', tokens_list))
         tokens_list = list(filter(lambda x: x != ' ', tokens_list))
         terms_list = list(set(tokens_list))
+        ps = PorterStemmer()
+        terms_list = [ps.stem(x) for x in terms_list]
         # 输出query解析结果
         print("查询字符串的解析结果：" + str(terms_list))
 

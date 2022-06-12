@@ -126,6 +126,8 @@ class InvertIndex:
                     'vote': review['vote'],
                     'reviewText': review['reviewText'],
                     'summary': review['summary'],
+                    'reviewTime': review['reviewTime'],
+                    'reviewerName': review['reviewerName'],
                 })
 
         print("原始数据集创建完成")
