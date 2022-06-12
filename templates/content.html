@@ -1,21 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>{{doc.title}}</title>
-</head>
-<body>
-<div id="basic" align="center">
-    <h1>{{doc.title}}</h1>
-    <p><b><font size="3" color="#404040 ">{{doc.datetime}}</font></b></p>
-</div>
-<hr/>
-<div id="detail" align="center">
-    <table width="1100" border="0">
-        <tr>
-            <td style="width:1000px"><p>{{doc.body}}</p></td>
-        </tr>
-    </table>
-</div>
-<hr/>
-</body>
+    <head>
+        <meta charset="utf-8">
+		<style type="text/css">
+			.bt1 {
+				color: #6600cc;
+				font-size: 25px;
+				font-family: 微软黑雅;
+				background-color: #999900;
+			}
+
+			.p2 {
+				font-family: 黑体;
+				font-size: 20px;
+				color: #3333ff;
+			}
+
+			.p1 {
+				font-family: 黑体;
+				font-size: 30px;
+				color: #3333FF;
+			}
+		</style>
+        <title>{{doc.title}}</title>
+    </head>
+    <body>
+        <div id="basic" align="center">
+            <h1>{{doc.title}}</h1>
+            </p>
+        </div>
+        <hr />
+        <div id="detail" align="center">
+            <table width="1100" border="0">
+                <tr colspan="1">
+                        <td>
+                            <img
+                                src="{{doc.imageURLHighRes[0]}}"
+                                title="notebook"
+                                width="100px"
+                                height="100px"
+                            />
+                        </td>
+                    <td>
+                        <p class="p2">Brand:{{doc.brand}}</font></b></p>
+                        <p class="p2">Price:{{doc.price}}</font></b></p>
+                        <p class="p2">Main Category:{{doc.main_cat}}</font></b></p>
+                        <p class="p2">
+                            <b>
+                                {%for cat in doc.category%}
+                                <font>Detailed Category: </font>
+                                {%if cat == doc.category[0]%}
+                                <font>{{cat}}</font>
+                                {%else%}
+                                <font>, {{cat}}</font>
+                                {%endif%} 
+                                {%endfor%}
+                            </b>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" class="bt1">
+                        Description:
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan='1'>
+                        <b>
+                            {%for de in doc.description%}
+                                <font>{{de}}</font><br>
+                            {%endfor%}
+                        </b>
+                    </td>
+                </tr>
+
+
+
+                <tr>
+                    <td colspan="2" class="bt1">
+                        Features:
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan='1'>
+                        <b>
+                            {%for fe in doc.feature%}
+                                <font>{{fe}}</font><br>
+                            {%endfor%}
+                        </b>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+        <hr />
+
+        {%for rev in doc.review%}
+        {%endfor%}
+        
+
+
+    </body>
 </html>
