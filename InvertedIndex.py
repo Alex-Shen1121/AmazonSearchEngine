@@ -119,6 +119,8 @@ class InvertIndex:
                     review['reviewText'] = ''
                 if 'summary' not in review.keys():
                     review['summary'] = ''
+                if 'reviewerName' not in review.keys():
+                        review['reviewerName'] = ''
                 # 添加评论信息
                 self.raw_data_metaPlusReview[productAsin]['reviews'].append({
                     'image': review['image'],
