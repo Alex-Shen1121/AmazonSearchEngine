@@ -125,12 +125,19 @@
     {% else %}
     <ul>
         <p>
-            <font size="4">┭┮﹏┭┮ 抱歉，没有找到与</font><font color="red"><b>“{{key}}”</b></font><font size="4">相关的商品。</font>
+            <font size="4">抱歉，没有找到与</font><font color="red"><b>“{{key}}”</b></font><font size="4">相关的商品。</font>
+            <br>
+            
+        <text>你是不是在查找：</text>
+        {%for correct in query_correct%}
+            {{correct   }}
+        {%endfor%}
             <br><br><br><br><br><br><br><br>
             <br><br><br><br><br><br><br><br>
             <br><br><br><br><br><br><br><br>
         </p>
     </ul>
+    
     {% endif %}
 
     <div id="footer">

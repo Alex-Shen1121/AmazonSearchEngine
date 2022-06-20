@@ -46,7 +46,8 @@ def search():
             keys_list, doc_id_list, doc_sim_list, page_list, query_advice = SE.search_query(
                 query)
             if len(doc_id_list) == 0:
-                return render_template('search.html', key=query, error=False)
+                queryCorrect = query_correct(query)
+                return render_template('search.html', key=query,query_correct=queryCorrect, error=False)
             else:
                 docs_list = get_doc_from_docID(doc_id_list)
                 docs_now = docs_list[0:5]
@@ -59,6 +60,36 @@ def search():
     except:
         print('search error')
 
+def editDistance(s1, s2):
+    n, m = len(s1), len(s2)
+
+    # 创建dp数组 size = n * m
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+
+    # 边界状态初始化
+    for i in range(n + 1):
+        dp[i][0] = i
+    for j in range(m + 1):
+        dp[0][j] = j
+
+     # 计算所有 DP 值
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            # 如果字符相同，则不需要操作 temp = 0
+            temp = 0 if s1[i - 1] == s2[j - 1] else 1
+            dp[i][j] = min(dp[i - 1][j - 1] + temp,
+                                    dp[i - 1][j] + 1,
+                                    dp[i][j - 1] + 1)
+
+    return dp[n][m]
+
+def query_correct(query):
+    wordList = SE.index_class.terms_lib
+    correctList = {}
+    for word in wordList:
+        correctList[word] = editDistance(query, word)
+    correctList = sorted(correctList.items(), key=lambda x: x[1])
+    return [x[0] for x in correctList[:5]]
 
 # 将需要的数据以字典形式打包传递给search函数
 def get_doc_from_docID(docid, extra=False):

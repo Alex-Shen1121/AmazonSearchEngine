@@ -200,11 +200,12 @@ class SearchEngine:
         for d in final.values():
             doc_id_list.append(d["doc_ID"])
             doc_sim_list.append(d["cos_sim"])
-
         wordlist = []
+        # 统计所有doc的term
         for docID in result:
             for words in self.index_class.doc_set[docID].values():
                 wordlist.extend(words)
+        # 统计个数并排序
         wordlist = Counter(wordlist)
         wordlist = sorted(wordlist.items(), key=lambda x: x[1], reverse=True)
         query_advice = [x[0] for x in wordlist[:5]]
