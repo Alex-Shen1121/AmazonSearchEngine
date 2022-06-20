@@ -47,6 +47,10 @@
                     <input type="submit" id="btn" value="搜索">
                 </p>
             </form>
+            <text>Query 建议：</text>
+            {%for advice in query_advice%}
+                {{advice   }}
+            {%endfor%}
         </ul>
     </div>
     <hr/>
@@ -64,6 +68,8 @@
     {% block high_search%}
     {% endblock %}
     {% if error%}
+    
+    
 
     {% for doc in docs%}
         <div id={{doc.id}}>
@@ -129,7 +135,7 @@
 
     <div id="footer">
         <hr>
-        <p>© Simple news search engine, by ChenYu Shen (2022/06).</p>
+        <p>© Simple search engine, by ChenYu Shen (2022/06).</p>
     </div>
 
 </div>

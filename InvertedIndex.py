@@ -26,12 +26,18 @@ class InvertIndex:
     terms_num = 0
     # 倒排索引
     invert_index = {}
+    invert_index_title = {}
+    invert_index_reviewtext = {}
+    invert_index_feature = {}
     # TF
     doc_TF = {}
     # IDF
     doc_IDF = []
     # TF-IDF
     doc_TFIDF = {}
+    doc_TFIDF_title = {}
+    doc_TFIDF_reviewText = {}
+    doc_TFIDF_feature = {}
     # json压缩包路径
     metaPath = './rawdata/meta_Gift_Cards.json.gz'
     wholeReviewPath = './rawdata/Gift_Cards.json.gz'
@@ -191,6 +197,22 @@ class InvertIndex:
                         temp_list.append(j)
                         break
             self.invert_index[term] = temp_list
+        
+        for term in tqdm(self.terms_lib):
+            temp_list1 = []
+            temp_list2 = []
+            temp_list3 = []
+            # 看看文档集的每一个文档中有没有包含该token
+            for j in self.doc_set:
+                if term in self.doc_set[j]['title']:
+                    temp_list1.append(j)
+                if term in self.doc_set[j]['reviewText']:
+                    temp_list2.append(j)
+                if term in self.doc_set[j]['feature']:
+                    temp_list3.append(j)
+            self.invert_index_title[term] = temp_list1
+            self.invert_index_reviewtext[term] = temp_list2
+            self.invert_index_feature[term] = temp_list3
 
     def calculate_TFIDF(self, type='test'):
         # 计算TF
@@ -209,6 +231,54 @@ class InvertIndex:
                 else:
                     self.doc_TF[asin][i] = 0
                 i += 1
+                
+        doc_TF_title = {}
+        for asin in tqdm(self.doc_set.keys()):
+            doc_TF_title[asin] = [0.0] * self.terms_num
+            for l in self.doc_set[asin]['title']:
+                for token in l:
+                    if token in self.terms_lib:
+                        doc_TF_title[asin][self.terms_lib.index(token)] += 1.0
+            i = 0
+            for frequency in doc_TF_title[asin]:
+                if doc_TF_title[asin][i] > 0:
+                    doc_TF_title[asin][i] = (
+                        1 + math.log(doc_TF_title[asin][i], 10))
+                else:
+                    doc_TF_title[asin][i] = 0
+                i += 1
+        
+        doc_TF_feature = {}
+        for asin in tqdm(self.doc_set.keys()):
+            doc_TF_feature[asin] = [0.0] * self.terms_num
+            for l in self.doc_set[asin]['feature']:
+                for token in l:
+                    if token in self.terms_lib:
+                        doc_TF_feature[asin][self.terms_lib.index(token)] += 1.0
+            i = 0
+            for frequency in doc_TF_feature[asin]:
+                if doc_TF_feature[asin][i] > 0:
+                    doc_TF_feature[asin][i] = (
+                        1 + math.log(doc_TF_feature[asin][i], 10))
+                else:
+                    doc_TF_feature[asin][i] = 0
+                i += 1
+        
+        doc_TF_reviewText = {}
+        for asin in tqdm(self.doc_set.keys()):
+            doc_TF_reviewText[asin] = [0.0] * self.terms_num
+            for l in self.doc_set[asin]['reviewText']:
+                for token in l:
+                    if token in self.terms_lib:
+                        doc_TF_reviewText[asin][self.terms_lib.index(token)] += 1.0
+            i = 0
+            for frequency in doc_TF_reviewText[asin]:
+                if doc_TF_reviewText[asin][i] > 0:
+                    doc_TF_reviewText[asin][i] = (
+                        1 + math.log(doc_TF_reviewText[asin][i], 10))
+                else:
+                    doc_TF_reviewText[asin][i] = 0
+                i += 1
 
         # 计算IDF
         print("正在计算IDF...")
@@ -224,6 +294,36 @@ class InvertIndex:
                 len(self.doc_set) / (self.doc_IDF[i]+1), 10)
             i += 1
 
+        doc_IDF_title = [0.0] * self.terms_num
+        i = 0
+        for term in tqdm(self.terms_lib):
+            for doc in self.doc_set.values():
+                if term in doc['title']:
+                    doc_IDF_title[i] += 1
+            doc_IDF_title[i] = math.log(
+                len(self.doc_set) / (doc_IDF_title[i]+1), 10)
+            i += 1
+        
+        doc_IDF_feature = [0.0] * self.terms_num
+        i = 0
+        for term in tqdm(self.terms_lib):
+            for doc in self.doc_set.values():
+                if term in doc['feature']:
+                    doc_IDF_feature[i] += 1
+            doc_IDF_feature[i] = math.log(
+                len(self.doc_set) / (doc_IDF_feature[i]+1), 10)
+            i += 1
+
+        doc_IDF_reviewText = [0.0] * self.terms_num
+        i = 0
+        for term in tqdm(self.terms_lib):
+            for doc in self.doc_set.values():
+                if term in doc['reviewText']:
+                    doc_IDF_reviewText[i] += 1
+            doc_IDF_reviewText[i] = math.log(
+                len(self.doc_set) / (doc_IDF_reviewText[i]+1), 10)
+            i += 1
+
         # 计算TF-IDF
         print("正在计算TF-IDF...")
         for asin in tqdm(self.doc_set.keys()):
@@ -231,6 +331,24 @@ class InvertIndex:
             for i in range(self.terms_num):
                 self.doc_TFIDF[asin][i] = self.doc_TF[asin][i] * \
                     self.doc_IDF[i]
+        
+        for asin in tqdm(self.doc_set.keys()):
+            self.doc_TFIDF_title[asin] = [0.0] * self.terms_num
+            for i in range(self.terms_num):
+                self.doc_TFIDF_title[asin][i] = doc_TF_title[asin][i] * \
+                    doc_IDF_title[i]
+        
+        for asin in tqdm(self.doc_set.keys()):
+            self.doc_TFIDF_feature[asin] = [0.0] * self.terms_num
+            for i in range(self.terms_num):
+                self.doc_TFIDF_feature[asin][i] = doc_TF_feature[asin][i] * \
+                    doc_IDF_feature[i]
+        
+        for asin in tqdm(self.doc_set.keys()):
+            self.doc_TFIDF_reviewText[asin] = [0.0] * self.terms_num
+            for i in range(self.terms_num):
+                self.doc_TFIDF_reviewText[asin][i] = doc_TF_reviewText[asin][i] * \
+                    doc_IDF_reviewText[i]
 
     def save_index(self, type='test'):
         print("正在保存各种索引...")
@@ -265,6 +383,15 @@ class InvertIndex:
         with open(f"./datasets/{type}/doc_TFIDF_{type}.pkl", "wb") as fp:
             pickle.dump(self.doc_TFIDF, fp,
                         protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_TFIDF_title_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_TFIDF_title, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_TFIDF_feature_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_TFIDF_feature, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
+        with open(f"./datasets/{type}/doc_TFIDF_reviewText_{type}.pkl", "wb") as fp:
+            pickle.dump(self.doc_TFIDF_reviewText, fp,
+                        protocol=pickle.HIGHEST_PROTOCOL)
 
     def load_index(self, type='test'):
         # 加载各种索引
@@ -288,6 +415,12 @@ class InvertIndex:
             self.doc_IDF = pickle.load(fp)
         with open(f"./datasets/{type}/doc_TFIDF_{type}.pkl", "rb") as fp:
             self.doc_TFIDF = pickle.load(fp)
+        with open(f"./datasets/{type}/doc_TFIDF_title_{type}.pkl", "rb") as fp:
+            self.doc_TFIDF_title = pickle.load(fp)
+        with open(f"./datasets/{type}/doc_TFIDF_feature_{type}.pkl", "rb") as fp:
+            self.doc_TFIDF_feature = pickle.load(fp)
+        with open(f"./datasets/{type}/doc_TFIDF_reviewText_{type}.pkl", "rb") as fp:
+            self.doc_TFIDF_reviewText = pickle.load(fp)
 
 if __name__ == '__main__':
     index_class = InvertIndex('./datasets', 'test')

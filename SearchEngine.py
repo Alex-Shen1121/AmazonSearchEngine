@@ -1,3 +1,4 @@
+from collections import Counter
 from InvertedIndex import InvertIndex
 import jieba
 import re
@@ -16,11 +17,13 @@ class SearchEngine:
         sq1 = 0
         sq2 = 0
 
+        # 计算余弦乘积
         for i in range(len(s1_cut_code)):
             sum += s1_cut_code[i] * s2_cut_code[i]
             sq1 += pow(s1_cut_code[i], 2)
             sq2 += pow(s2_cut_code[i], 2)
 
+        # 计算余弦相似度
         try:
             result = round(float(sum) / (math.sqrt(sq1) * math.sqrt(sq2)), 4)
         except ZeroDivisionError:
@@ -86,22 +89,21 @@ class SearchEngine:
         return final_result_k
 
     # 根据选择排序的思想，返回time topK的文档ID，复杂度O(n)
-    def top_k_time(self, final_result):
+    def top_k_vote(self, final_result, k = 25):
         doc_id_list = []
         cos_sim_list = []
-        time_list = []
+        voteSum_list = []
         for v in final_result.values():
             doc_id_list.append(v['doc_ID'])
             cos_sim_list.append(v['cos_sim'])
-            time_list.append(v['datetime'])
+            voteSum_list.append(v['vote_sum'])
 
         k = 25
         final_result_k = {}
         for i in range(len(doc_id_list)):
             max_index = i
             for j in range(i + 1, len(doc_id_list)):
-                if datetime.datetime.strptime(time_list[j], "%Y-%m-%d %H:%M:%S") > datetime.datetime.strptime(
-                        time_list[max_index], "%Y-%m-%d %H:%M:%S"):
+                if voteSum_list[j] > voteSum_list[max_index]:
                     max_index = j
             if max_index != i:
                 temp_id = doc_id_list[i]
@@ -164,15 +166,11 @@ class SearchEngine:
             else:
                 query_TF[i] = 0
             i += 1
-        # 打印输出query_TF ##############################################################
-        # print(query_TF)
 
         # 计算query_TFIDF
         query_TFIDF = [0.0] * self.index_class.terms_num
         for i in range(self.index_class.terms_num):
             query_TFIDF[i] = query_TF[i] * self.index_class.doc_IDF[i]
-        # 打印输出TF-IDF ################################################################
-        # print(query_TFIDF)
 
         # 计算与获取query与搜索到的document(s)之间的cos-sim、时间；并整合成一个字典，作为结果进行返回
         final = {}
@@ -180,14 +178,16 @@ class SearchEngine:
             doc_id = result[i]
             doc_TFIDF = self.index_class.doc_TFIDF[doc_id]
             sim = self.cos_sim(query_TFIDF, doc_TFIDF)
-            # time = self.index_class.origin_doc_set[doc_id]['datetime']
-            final[i] = {'doc_ID': doc_id, 'cos_sim': sim}
+            vote_sum = len(self.index_class.raw_data_metaPlusReview[doc_id]['reviews'])
+            for review in self.index_class.raw_data_metaPlusReview[doc_id]['reviews']:
+                vote_sum += int(review['vote'])
+            final[i] = {'doc_ID': doc_id, 'cos_sim': sim, 'vote_sum': vote_sum}
 
         # 根据用户选择的方式排序返回
         if sort_type == 0:
             final = self.top_k_cossim(final, k=25)  # 按余弦相似度
         else:
-            final = self.top_k_time(final)  # 按发布时间
+            final = self.top_k_vote(final, k=25)  # 按发布时间
 
         # 页数（每页5个）
         if len(final) <= 5:
@@ -201,7 +201,14 @@ class SearchEngine:
             doc_id_list.append(d["doc_ID"])
             doc_sim_list.append(d["cos_sim"])
 
-        return terms_list, doc_id_list, doc_sim_list, page_list
+        wordlist = []
+        for docID in result:
+            for words in self.index_class.doc_set[docID].values():
+                wordlist.extend(words)
+        wordlist = Counter(wordlist)
+        wordlist = sorted(wordlist.items(), key=lambda x: x[1], reverse=True)
+        query_advice = [x[0] for x in wordlist[:5]]
+        return terms_list, doc_id_list, doc_sim_list, page_list, query_advice
 
 if __name__ == '__main__':
     # 初始化索引类

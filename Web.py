@@ -43,7 +43,7 @@ def search():
         query = request.form['query']  # 从web的输入框中获取用户输入的query
         if query != '':
             start = time.perf_counter()
-            keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(
+            keys_list, doc_id_list, doc_sim_list, page_list, query_advice = SE.search_query(
                 query)
             if len(doc_id_list) == 0:
                 return render_template('search.html', key=query, error=False)
@@ -53,7 +53,7 @@ def search():
                 end = time.perf_counter()
                 cost = round(end - start, 3)
                 return render_template('high_search.html', checked=checked, key=query, keys_list=keys_list,
-                                       docs=docs_now, page=page_list, cost=cost, error=True)
+                                       docs=docs_now, page=page_list, query_advice=query_advice, cost=cost, error=True)
         else:
             return render_template('search.html', error=False)
     except:
@@ -195,7 +195,7 @@ def content(id):
 
 if __name__ == '__main__':
     # SE = SearchEngine('whole')
-    SE = SearchEngine('whole')
+    SE = SearchEngine('test')
 
     # app.run(host="0.0.0.0", port=1234)  # 部署到服务器上，局域网内可通过服务器IP和端口访问
     app.run(host="localhost", port=1234)  # 部署在本地
