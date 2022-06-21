@@ -47,7 +47,7 @@ def search():
                 query)
             if len(doc_id_list) == 0:
                 queryCorrect = query_correct(query)
-                return render_template('search.html', key=query,query_correct=queryCorrect, error=False)
+                return render_template('search.html', key=query, query_correct=queryCorrect, error=False)
             else:
                 docs_list = get_doc_from_docID(doc_id_list)
                 docs_now = docs_list[0:5]
@@ -59,6 +59,7 @@ def search():
             return render_template('search.html', error=False)
     except:
         print('search error')
+
 
 def editDistance(s1, s2):
     n, m = len(s1), len(s2)
@@ -78,10 +79,11 @@ def editDistance(s1, s2):
             # 如果字符相同，则不需要操作 temp = 0
             temp = 0 if s1[i - 1] == s2[j - 1] else 1
             dp[i][j] = min(dp[i - 1][j - 1] + temp,
-                                    dp[i - 1][j] + 1,
-                                    dp[i][j - 1] + 1)
+                           dp[i - 1][j] + 1,
+                           dp[i][j - 1] + 1)
 
     return dp[n][m]
+
 
 def query_correct(query):
     wordList = SE.index_class.terms_lib
@@ -92,6 +94,8 @@ def query_correct(query):
     return [x[0] for x in correctList[:5]]
 
 # 将需要的数据以字典形式打包传递给search函数
+
+
 def get_doc_from_docID(docid, extra=False):
     docs = []
     i = 0
@@ -119,21 +123,28 @@ def get_doc_from_docID(docid, extra=False):
         imageURLHighRes = list(
             set(SE.index_class.raw_data_metaPlusReview[id]['imageURLHighRes']))
         # 评论时间
-        reviews_time = [x['reviewTime'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviews_time = [x['reviewTime']
+                        for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
         # 评论Name
-        reviewerName = [x['reviewerName'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviewerName = [x['reviewerName']
+                        for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
         # 商品评论
-        reviews_image = [x['image'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviews_image = [x['image']
+                         for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
         # 评分
-        reviews_overall = [x['overall'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviews_overall = [x['overall']
+                           for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
         # 点赞数
-        reviews_vote = [x['vote'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviews_vote = [x['vote']
+                        for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
         # 评论
-        reviews_text = [x['reviewText'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviews_text = [x['reviewText']
+                        for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
         # summary
-        reviews_summary = [x['summary'] for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
-        reviews = [[reviews_image[i], reviews_overall[i], reviews_vote[i], 
-                    reviews_text[i], reviews_summary[i],reviewerName[i], reviews_time[i]] 
+        reviews_summary = [x['summary']
+                           for x in SE.index_class.raw_data_metaPlusReview[id]['reviews']]
+        reviews = [[reviews_image[i], reviews_overall[i], reviews_vote[i],
+                    reviews_text[i], reviews_summary[i], reviewerName[i], reviews_time[i]]
                    for i in range(len(reviews_image))]
 
         sim = doc_sim_list[i]
@@ -199,7 +210,7 @@ def high_search(key):
                 checked[i] = 'checked="true"'
             else:
                 checked[i] = ''
-        keys_list, doc_id_list, doc_sim_list, page_list = SE.search_query(
+        keys_list, doc_id_list, doc_sim_list, page_list, query_advice = SE.search_query(
             query, selected)
         if len(doc_id_list) == 0:
             return render_template('search.html', key=query, error=False)
@@ -208,7 +219,7 @@ def high_search(key):
             docs_now = docs_list[0:5]
             end = time.perf_counter()
             cost = round(end - start, 3)
-            return render_template('high_search.html', checked=checked, key=query, keys_list=keys_list, docs=docs_now,
+            return render_template('high_search.html', checked=checked, key=query, query_advice=query_advice, keys_list=keys_list, docs=docs_now,
                                    page=page_list, cost=cost, error=True)
     except:
         print('high search error')

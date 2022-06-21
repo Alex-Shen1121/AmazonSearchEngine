@@ -126,7 +126,7 @@ class SearchEngine:
         # 用正则表达式去除标点，只保留"中文"、"大小写英文字母"、"数字"
         search_query = re.sub("[^\u4e00-\u9fa5^a-z^A-Z^0-9]", " ", search_query)
         # jieba分词，禁用全切割模式
-        tokens_list = list(jieba.cut(search_query, cut_all=False))
+        tokens_list = list(search_query.split(' '))
         tokens_list = list(filter(lambda x: x != '', tokens_list))
         tokens_list = list(filter(lambda x: x != ' ', tokens_list))
         terms_list = list(set(tokens_list))

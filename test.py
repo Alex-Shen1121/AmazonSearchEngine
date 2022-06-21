@@ -4,7 +4,7 @@ from nltk.tokenize import word_tokenize
  
 ps = PorterStemmer()
  
-sentence = "Programmers program with programming, [languages]"
+sentence = "juice is good"
 words = word_tokenize(sentence)
  
 for w in words:
