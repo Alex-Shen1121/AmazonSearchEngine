@@ -180,7 +180,8 @@ class SearchEngine:
             sim = self.cos_sim(query_TFIDF, doc_TFIDF)
             vote_sum = len(self.index_class.raw_data_metaPlusReview[doc_id]['reviews'])
             for review in self.index_class.raw_data_metaPlusReview[doc_id]['reviews']:
-                vote_sum += int(review['vote'])
+                if review['vote'] == 0 or review['vote'].isdigit():
+                    vote_sum += int(review['vote'])
             final[i] = {'doc_ID': doc_id, 'cos_sim': sim, 'vote_sum': vote_sum}
 
         # 根据用户选择的方式排序返回

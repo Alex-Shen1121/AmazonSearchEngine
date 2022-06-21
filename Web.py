@@ -236,8 +236,8 @@ def content(id):
 
 
 if __name__ == '__main__':
-    # SE = SearchEngine('whole')
-    SE = SearchEngine('test')
+    SE = SearchEngine('whole')
+    # SE = SearchEngine('test')
 
     # app.run(host="0.0.0.0", port=1234)  # 部署到服务器上，局域网内可通过服务器IP和端口访问
     app.run(host="localhost", port=1234)  # 部署在本地
